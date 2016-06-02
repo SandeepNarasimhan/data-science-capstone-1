@@ -20,4 +20,4 @@ vignettes/*.pdf
 .Rproj.user
 
 data/
-download/
+downloads/
