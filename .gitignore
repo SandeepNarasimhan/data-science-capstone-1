@@ -21,3 +21,5 @@ vignettes/*.pdf
 
 data/
 downloads/
+
+*_cache/*

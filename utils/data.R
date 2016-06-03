@@ -54,17 +54,17 @@ ensure_data_unzipped = function(){
         ensure_data_file_exists(data_file)
     }
     
-
-    
 }
 
 prepare_data = function(){
-
     ensure_data_downloaded();
     ensure_data_unzipped();
-    
 }
 
-
+get_data = function(type){
+    file_name = paste(c('en_US', type, 'txt'), collapse = ".")
+    file_path = paste(c(data_folder_name, file_name), collapse = "/")
+    scan(file_path, what = "character", sep = "\n")
+}
 
 

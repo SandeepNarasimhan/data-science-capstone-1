@@ -1,6 +1,6 @@
 list_of_packages = c(
     'dplyr',
-    'xtable',
+    'pander',
     'ggplot2'
 )
 

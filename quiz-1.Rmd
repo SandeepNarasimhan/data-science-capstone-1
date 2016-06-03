@@ -1,0 +1,119 @@
+---
+title: "Quiz 1 - Solutions"
+author: "Igor Goltsov <riversy@gmail.com>"
+date: "June 3, 2016"
+output: html_document
+---
+
+In this document I will prepare answers to the questions of **Quiz 1** of the **Capstone Project**. 
+
+Before we start to asnwer the questions we need to load requirements and prepare the data files.
+
+```{r results='hide', warning=FALSE, message=FALSE}
+source('utils/requirements.R')
+source('utils/data.R')
+prepare_data()
+```
+
+We sure now we have our data downloaded and ready for work. Let's load it into variables.
+
+```{r, cache=TRUE, warning=FALSE}
+twitter.lines <- get_data('twitter')
+blogs.lines <- get_data('blogs')
+news.lines <- get_data('news')
+```
+
+## Question 1
+
+The en_US.blogs.txt file is how many megabytes?
+
+```{r}
+data_file_path <- paste(c(data_folder_name, 'en_US.blogs.txt'), collapse = "/")
+blogs_size <- file.size(data_file_path)
+blogs_size_mb <- round(blogs_size / 1024 / 1024)
+```
+
+So, answer is **`r blogs_size_mb`Mb**.
+
+## Question 2
+
+The en_US.twitter.txt has how many lines of text?
+
+```{r}
+twitter.lines.qty <- length(twitter.lines)
+```
+
+The answer is `r twitter.lines.qty` so it's **Over 2 million**.
+
+## Question 3
+
+What is the length of the longest line seen in any of the three en_US data sets?
+
+```{r}
+get_longest_line <- function(set_of_lines){
+    max(nchar(set_of_lines))
+}
+
+labels <- c(
+    "blogs.lines",
+    "news.lines",
+    "twitter.lines"
+)
+
+max_lengths <- c(
+    get_longest_line(blogs.lines),
+    get_longest_line(news.lines),
+    get_longest_line(twitter.lines)
+)
+
+max_lengths_set <- data.frame(labels, max_lengths)
+colnames(max_lengths_set) <- c('name', 'max_length')
+max_lengths_set_ordered <- arrange(max_lengths_set, desc(max_length))
+pander(max_lengths_set_ordered)
+```
+
+The most huge length is **`r max_lengths_set_ordered$max_length[1]`** througth out all sets of data. And the variable is **`r max_lengths_set_ordered$name[1]`**.
+
+## Question 4
+
+In the en_US twitter data set, if you divide the number of lines where the word "love" (all lowercase) occurs by the number of lines the word "hate" (all lowercase) occurs, about what do you get?
+
+```{r}
+get_word_occurance_qty <- function(word){
+    length(grep(word, twitter.lines, ignore.case = TRUE))
+}
+
+love.lines.qty <- get_word_occurance_qty('love')
+hate.lines.qty <- get_word_occurance_qty('hate')
+love.coeficient <- love.lines.qty / hate.lines.qty
+```
+
+The answer is **`r love.coeficient`**.
+
+## Question 5
+
+The one tweet in the en_US twitter data set that matches the word "biostats" says what?
+
+```{r}
+line_about_biostats <- twitter.lines[grep('biostats', twitter.lines, ignore.case = TRUE)]
+```
+
+The line we looking for is **'`r line_about_biostats`'**.
+
+## Question 6
+
+How many tweets have the exact characters "A computer once beat me at chess, but it was no match for me at kickboxing". (I.e. the line matches those characters exactly.)
+
+```{r}
+exact.lines.qty <- length(
+    which(twitter.lines == "A computer once beat me at chess, but it was no match for me at kickboxing")
+)
+```
+
+The answer is **`r exact.lines.qty`**.
+
+
+
+
+
+
