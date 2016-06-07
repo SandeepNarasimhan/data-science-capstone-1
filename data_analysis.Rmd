@@ -1,0 +1,82 @@
+---
+title: "Exploratory Data Analysis and Modeling"
+author: "Igor Goltsov <riversy@gmail.com>"
+date: "June 7, 2016"
+output: html_document
+---
+
+## Introduction
+
+...
+
+## Outlook the data
+
+Before we start let's ensure we have the data and load it.
+
+```{r results='hide', warning=FALSE, message=FALSE}
+source('utils/requirements.R')
+source('utils/data.R')
+prepare_data()
+```
+
+```{r, cache=TRUE, warning=FALSE}
+twitter.lines <- get_data('twitter')
+blogs.lines <- get_data('blogs')
+news.lines <- get_data('news')
+```
+
+We will use a huge amount of data that provided by [HC Corpora](http://www.corpora.heliohost.org/). It will be used to train our app to predict next word in the text that user types. The data was collected by **HC Corpora** and recompiled for **Coursera** students by **Swiftkey** team. This package contains sets of News, Blog Posts and Tweets with 4 languages - English, Deutch, Finnish and Russian. I will use English texts for our learning purposes. 
+
+**News Corpus** contains headlines of news. These are short full of sence sentences. 
+
+```{r}
+news.lines.df <- data.frame(head(news.lines, 5))
+colnames(news.lines.df) <- c('First 5 rows of News')
+pander(
+    news,
+    justify = 'left'
+)
+```
+
+It shouldn't be difficult to clean these texts as soon as they are already normalized for media. And it might be easy prepared to be used for machine learning.
+
+The next corpus is **Blog Posts Corpus** which contents a set of middlesized posts. 
+
+```{r}
+blogs.lines.df <- data.frame(head(blogs.lines, 5))
+colnames(blogs.lines.df) <- c('First 5 rows of Blog Posts')
+pander(
+    blogs.lines.df,
+    justify = 'left'
+)
+```
+
+We can see that **Blog Posts** texts are longer. But it still great undertandable and well formatted. So it also can be easy cleaned and prepared for machine learning. 
+
+Let's have a look onto **Twitter Corpus**. 
+
+```{r}
+twitter.lines.df <- data.frame(head(twitter.lines, 5))
+colnames(twitter.lines.df) <- c('First 5 Tweets')
+pander(
+    twitter.lines.df,
+    justify = 'left'
+)
+```
+
+As we can see it less readable. It contains amount of abbreviations and slang words. As well as smiles. It looks like we need to work a bit to prepare it for machine learning. 
+
+As we can see all these corpuses are human generate texts. This is a great because we would like to build algorithm that will predict next word for sentence human typing. Theoretically we may use other user-generated texts to make prediction model better. Moreover we can control the style of typing helper if we will use corpuses of proper style to train our mode. For example if we will use belles-lettres only or twitter posts only to train the prediction model. We can also use the corpus of product reviews to build prediction model of Review Typing helper.
+
+In this work I will use News, Blog Posts and Tweets corpuses to make the prediction model more common. 
+
+## Data Pricessing Plan
+
+What are the common steps in natural language processing?
+
+
+
+
+What are some common issues in the analysis of text data?
+
+What is the relationship between NLP and the concepts you have learned in the Specialization?
