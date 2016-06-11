@@ -173,11 +173,11 @@ I will prepare the sample that cantains 10% of all provided data. For that let's
 sample.lines  = c(twitter.lines.sample, blogs.lines.sample, news.lines.sample)
 ```
 
-Now I have sample data set that contains `r length(sample.lines)` lines of representative data. We can easly process it but in the other hand we can make some suggestions on the basis of that data. 
+Now I have sample data set that contains `r length(sample.lines)` lines with representative data. We can easly process it but in the other hand we can make some suggestions on the basis of that data. 
 
 ### Clean Up Sample Data Set
 
-On this step I will create new Corpus of the **tm** package and remove from text stop words, numbers and punctuation. I also would like to remove profanity words from all texts to prevent my work from being confusing.
+On this step I will create new Corpus of the **tm** package and remove from text stop words, numbers and punctuation. I also would like to remove profanity words from all texts to prevent my work from being confusing. I will use following list as profanity list - [https://gist.github.com/ryanlewis/a37739d710ccdb4b406d](https://gist.github.com/ryanlewis/a37739d710ccdb4b406d).
 
 ```{r}
 
