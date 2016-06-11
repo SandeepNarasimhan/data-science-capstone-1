@@ -39,13 +39,19 @@ get_data = function(name){
     scan(file_path, what = "character", sep = "\n")
 }
 
+# Sample soze is 1%
+
+# TODO: Make it 10% before release.
+
+sample_size = 0.01
+
 twitter.lines <- get_data('twitter')
 twitter.lines.lengths = nchar(twitter.lines)
 twitter.lines.summary = summary(twitter.lines.lengths)
 twitter.lines.sample = twitter.lines[
     sample(
         1:length(twitter.lines), 
-        round(length(twitter.lines) * 0.1)
+        round(length(twitter.lines) * sample_size)
     )
 ]
 rm(twitter.lines)
@@ -56,7 +62,7 @@ blogs.lines.summary = summary(blogs.lines.lengths)
 blogs.lines.sample = blogs.lines[
     sample(
         1:length(blogs.lines), 
-        round(length(blogs.lines) * 0.1)
+        round(length(blogs.lines) * sample_size)
     )
 ]
 rm(blogs.lines)
@@ -67,7 +73,7 @@ news.lines.summary = summary(news.lines.lengths)
 news.lines.sample = news.lines[
     sample(
         1:length(news.lines), 
-        round(length(news.lines) * 0.1)
+        round(length(news.lines) * sample_size)
     )
 ]
 rm(news.lines)
@@ -177,11 +183,26 @@ Now I have sample data set that contains `r length(sample.lines)` lines with rep
 
 ### Clean Up Sample Data Set
 
-On this step I will create new Corpus of the **tm** package and remove from text stop words, numbers and punctuation. I also would like to remove profanity words from all texts to prevent my work from being confusing. I will use following list as profanity list - [https://gist.github.com/ryanlewis/a37739d710ccdb4b406d](https://gist.github.com/ryanlewis/a37739d710ccdb4b406d).
+On this step I will create new *Corpus* of the **tm** package and remove from text stop words, numbers and punctuation. I also would like to remove profanity words from all texts to prevent my work from being confusing. I will use following list as profanity dictionary - [https://gist.github.com/ryanlewis/a37739d710ccdb4b406d](https://gist.github.com/ryanlewis/a37739d710ccdb4b406d).
 
 ```{r}
+# Create Corpus of Sample
+sample.corpus = Corpus(VectorSource(sample.lines))
 
+# Remive variable with Sample Vector to reduce
+# memory consumption.
+rm(sample.lines)
 
+# I've examined control characters in the body of some texts.
+# And I'd like to make it clean from these characters.
+convert_encoding = function(x){
+    iconv(x, to="UTF-8", sub="byte")
+}
+sample.corpus = tm_map(
+    sample.corpus, 
+    content_transformer(convert_encoding), 
+    mc.cores = 3
+)
 
 
 
