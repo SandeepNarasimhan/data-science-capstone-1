@@ -1,7 +1,23 @@
 list_of_packages = c(
     'dplyr',
     'pander',
-    'ggplot2'
+    'ggplot2',
+    'RWekajars',
+    'qdapDictionaries',
+    'qdapRegex',
+    'qdapTools',
+    'RColorBrewer',
+    'qdap',
+    'NLP',
+    'tm',
+    'SnowballC',
+    'slam',
+    'RWeka',
+    'rJava',
+    'wordcloud',
+    'stringr',
+    'DT',
+    'stringi'
 )
 
 installed_packages = installed.packages()

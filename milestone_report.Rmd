@@ -1,0 +1,206 @@
+---
+title: 'Milestone Report: Exploratory Data Analisys'
+author: "Igor Goltsov <riversy@gmail.com>"
+date: "June 11, 2016"
+output: html_document
+---
+
+We will use a huge amount of data that provided by [HC Corpora](http://www.corpora.heliohost.org/). It will be used to train our app to predict next word in the text that user types. The data was collected by **HC Corpora** and recompiled for **Coursera** students by **Swiftkey** team. This package contains sets of News, Blog Posts and Tweets with 4 languages - English, Deutch, Finnish and Russian. I will use English texts for our learning purposes. 
+
+Before we start let's ensure we have the data and load it. I will use speacially prepared utils to load it into varaibles with names *twitter.lines*, *blogs.lines*  and *news.lines*.
+
+```{r results='hide', warning=FALSE, message=FALSE}
+source('utils/requirements.R')
+source('utils/data.R')
+prepare_data()
+```
+
+Funsction *prepare_data()* will ensure that **Coursera-SwiftKey.zip** is downloaded and proper that necessery files are unzipped into *data* folder. 
+
+## Examine files 
+
+I will check the line qty and it's statistical properties for every file. I will also tyr to find more interesting facts about the data. 
+
+Let's start from file sizes and the qty if line for every file. 
+
+
+```{r, cache=TRUE, warning=FALSE}
+get_file_by_name = function(name){
+    paste(c('en_US', name, 'txt'), collapse = ".")
+}
+
+get_file_path_by_name = function(name){
+    file_name = get_file_by_name(name)
+    file_path = paste(c(data_folder_name, file_name), collapse = "/")    
+}
+
+get_data = function(name){
+    file_path = get_file_path_by_name(name)
+    scan(file_path, what = "character", sep = "\n")
+}
+
+twitter.lines <- get_data('twitter')
+twitter.lines.lengths = nchar(twitter.lines)
+twitter.lines.summary = summary(twitter.lines.lengths)
+twitter.lines.sample = twitter.lines[
+    sample(
+        1:length(twitter.lines), 
+        round(length(twitter.lines) * 0.1)
+    )
+]
+rm(twitter.lines)
+
+blogs.lines <- get_data('blogs')
+blogs.lines.lengths = nchar(blogs.lines)
+blogs.lines.summary = summary(blogs.lines.lengths)
+blogs.lines.sample = blogs.lines[
+    sample(
+        1:length(blogs.lines), 
+        round(length(blogs.lines) * 0.1)
+    )
+]
+rm(blogs.lines)
+
+news.lines <- get_data('news')
+news.lines.lengths = nchar(news.lines)
+news.lines.summary = summary(news.lines.lengths)
+news.lines.sample = news.lines[
+    sample(
+        1:length(news.lines), 
+        round(length(news.lines) * 0.1)
+    )
+]
+rm(news.lines)
+
+get_file_size_in_mb = function(name){
+    file_path = get_file_path_by_name(name)
+    file_info = file.info(file_path)
+    file_info$size / 1024.0 / 1024.0
+}
+
+get_line_qty = function(variable){
+    length(variable)
+}
+
+row.names = c('Tweets', 'Blog Posts', 'News Records')
+row.file_names = c(get_file_by_name('twitter'), get_file_by_name('blogs'), get_file_by_name('news'))
+row.file_sizes = c(get_file_size_in_mb('twitter'), get_file_size_in_mb('blogs'), get_file_size_in_mb('news'))
+row.line_qtys = c(
+    get_line_qty(twitter.lines.lengths), 
+    get_line_qty(blogs.lines.lengths), 
+    get_line_qty(news.lines.lengths)
+)
+
+row.min_lines = c(twitter.lines.summary[1], blogs.lines.summary[1], news.lines.summary[1])
+row.max_lines = c(twitter.lines.summary[6], blogs.lines.summary[6], news.lines.summary[6])
+row.mean_lines = c(twitter.lines.summary[4], blogs.lines.summary[4], news.lines.summary[4])
+row.median_lines = c(twitter.lines.summary[3], blogs.lines.summary[3], news.lines.summary[3])
+
+summary.table = data.frame(
+    row.names, 
+    row.file_names, 
+    row.file_sizes, 
+    row.line_qtys,
+    row.min_lines,
+    row.max_lines,
+    row.mean_lines,
+    row.median_lines
+)
+
+colnames(summary.table) = c(
+    "Data Source", 
+    "File Name",
+    "File Size, Mb",
+    "Lines in the file",
+    "Min Line Lenght",
+    "Max Line Lenght",
+    "Avg Line Lenght",
+    "Median of Line Lenght"
+)
+```
+
+We've prepared data. So let's print it. 
+
+```{r}
+pander(summary.table, fustify = 'left')
+```
+
+To understand the dencity of the lenghs for each of data source let's build violin plot. Iw will show us the real picture about how provided corpuses looks like. 
+
+```{r cache=TRUE}
+twitter.df = data.frame(
+    twitter.lines.lengths, 
+    rep("Twitter", length(twitter.lines.lengths))
+)
+colnames(twitter.df) = c('length', 'source') 
+
+blogs.df = data.frame(
+    blogs.lines.lengths, 
+    rep("Blogs", length(blogs.lines.lengths))
+)
+colnames(blogs.df) = c('length', 'source') 
+
+news.df = data.frame(
+    news.lines.lengths, 
+    rep("News", length(news.lines.lengths))
+)
+colnames(news.df) = c('length', 'source') 
+
+combined.df = rbind(twitter.df, blogs.df, news.df)
+```
+
+We can see by **Median of Line Length** that it's mostly below *200* and the max length of line is `r max(row.max_lines)`. So I will limit the **lengths** axis to make it more clear. And will add median mark 
+
+```{r warning=FALSE, out.width=800}
+ggplot(combined.df, aes(x=factor(source), y=length)) + 
+    geom_violin() +
+    geom_boxplot(width=.1, fill="black", outlier.colour=NA) +
+    stat_summary(fun.y=median, geom="point", fill="white", shape=21, size=2.5) +
+    ylim(0, 1000)
+```
+
+Wat can we resume? That the **Tweets**, **Blog Posts** and **News Lines** has mostly same size. But **Blog Posts** and **News** has much more higther maximum length of lines.
+
+## Keyword Dencity Analysis
+
+To realize the content of the gived sources I'd like clean it up and tokenize it with n-grams. But as soon as the original data source is huge I need to prepare the sample data set that is smaller. And it's easier to work with. 
+
+### Samplpling the Data
+
+I will prepare the sample that cantains 10% of all provided data. For that let's use 10% samples I've prepared before.. 
+
+```{r}
+sample.lines  = c(twitter.lines.sample, blogs.lines.sample, news.lines.sample)
+```
+
+Now I have sample data set that contains `r length(sample.lines)` lines of representative data. We can easly process it but in the other hand we can make some suggestions on the basis of that data. 
+
+### Clean Up Sample Data Set
+
+On this step I will create new Corpus of the **tm** package and remove from text stop words, numbers and punctuation. I also would like to remove profanity words from all texts to prevent my work from being confusing.
+
+```{r}
+
+
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
