@@ -17,7 +17,8 @@ list_of_packages = c(
     'wordcloud',
     'stringr',
     'DT',
-    'stringi'
+    'stringi',
+    'ngram'
 )
 
 installed_packages = installed.packages()

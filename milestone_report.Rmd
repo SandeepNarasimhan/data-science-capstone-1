@@ -23,7 +23,6 @@ I will check the line qty and it's statistical properties for every file. I will
 
 Let's start from file sizes and the qty if line for every file. 
 
-
 ```{r, cache=TRUE, warning=FALSE}
 get_file_by_name = function(name){
     paste(c('en_US', name, 'txt'), collapse = ".")
@@ -39,10 +38,7 @@ get_data = function(name){
     scan(file_path, what = "character", sep = "\n")
 }
 
-# Sample soze is 1%
-
-# TODO: Make it 10% before release.
-
+# Sample size is 10%
 sample_size = 0.01
 
 twitter.lines <- get_data('twitter')
@@ -128,10 +124,10 @@ colnames(summary.table) = c(
 We've prepared data. So let's print it. 
 
 ```{r}
-pander(summary.table, fustify = 'left')
+pander(summary.table, justify = 'left')
 ```
 
-To understand the dencity of the lenghs for each of data source let's build violin plot. Iw will show us the real picture about how provided corpuses looks like. 
+To understand the dencity of the lenghs for each of data source let's build violin plot. It will show us the real picture about length of lines in the corpus. 
 
 ```{r cache=TRUE}
 twitter.df = data.frame(
@@ -173,7 +169,7 @@ To realize the content of the gived sources I'd like clean it up and tokenize it
 
 ### Samplpling the Data
 
-I will prepare the sample that cantains 10% of all provided data. For that let's use 10% samples I've prepared before.. 
+I will prepare the sample that cantains 10% of all provided data. For that let's use 10% samples I've prepared before. 
 
 ```{r}
 sample.lines  = c(twitter.lines.sample, blogs.lines.sample, news.lines.sample)
@@ -185,11 +181,11 @@ Now I have sample data set that contains `r length(sample.lines)` lines with rep
 
 On this step I will create new *Corpus* of the **tm** package and remove from text stop words, numbers and punctuation. I also would like to remove profanity words from all texts to prevent my work from being confusing. I will use following list as profanity dictionary - [https://gist.github.com/ryanlewis/a37739d710ccdb4b406d](https://gist.github.com/ryanlewis/a37739d710ccdb4b406d).
 
-```{r}
+```{r cache=TRUE}
 # Create Corpus of Sample
 sample.corpus = Corpus(VectorSource(sample.lines))
 
-# Remive variable with Sample Vector to reduce
+# Remove variable with Sample Vector to reduce
 # memory consumption.
 rm(sample.lines)
 
@@ -198,18 +194,163 @@ rm(sample.lines)
 convert_encoding = function(x){
     iconv(x, to="UTF-8", sub="byte")
 }
+
 sample.corpus = tm_map(
     sample.corpus, 
     content_transformer(convert_encoding), 
     mc.cores = 3
 )
 
+# Convert to lower case
+sample.corpus = tm_map(
+    sample.corpus, 
+    content_transformer(tolower), 
+    lazy = TRUE
+)
 
+# Remove punctuation
+sample.corpus = tm_map(sample.corpus, content_transformer(removePunctuation))
 
+# Remove numbers
+sample.corpus = tm_map(sample.corpus, content_transformer(removeNumbers))
 
+# Remove URLs
+remove_url_callback = function(x){
+    gsub("http[[:alnum:]]*", "", x) 
+}
+sample.corpus = tm_map(sample.corpus, content_transformer(remove_url_callback))
+
+# Remove stop words
+sample.corpus = tm_map(sample.corpus, content_transformer(removeWords), stopwords("english"))
+
+# Remove profanity words
+profanity_words = scan("dictionary/profanity.txt", what = "character", sep = "\n")
+sample.corpus = tm_map(sample.corpus, content_transformer(removeWords), profanity_words)
+
+# Stem document
+sample.corpus = tm_map(sample.corpus, content_transformer(stemDocument))
+
+# Strip white spaces 
+sample.corpus = tm_map(sample.corpus, content_transformer(stripWhitespace))
 ```
 
+### Tockenize Cleaned Sample Corpus
 
+Ok, the data is clear and I can tokenize it using 1,2,3 and 4-grams. After that I will define more recent used words and build wordcloud for these sets of words. 
+
+```{r cache=TRUE}
+# Tune CPU cores usage 
+options(mc.cores=2)
+
+sample.corpus.df = data.frame(
+    text=unlist(sapply(sample.corpus,`[`, "content")), 
+    stringsAsFactors = FALSE
+)
+
+# Free memory
+rm(sample.corpus)
+
+get_ngrams <- function(corpus, ngram_count = 1, limit = FALSE){
+
+    
+    
+    ngrams <- NGramTokenizer(
+        corpus, 
+        Weka_control(
+            min = ngram_count, 
+            max = ngram_count, 
+            delimiters = " \\r\\n\\t.,;:\"()?!"
+        )
+    )
+    ngrams <- data.frame(table(ngrams))
+    
+    
+    
+    
+    
+    if (limit){
+        ngrams <- ngrams[
+            order(
+                ngrams$Freq, 
+                decreasing = TRUE
+            ),
+        ][1:limit, ]
+    } else {
+        ngrams <- ngrams[
+            order(
+                ngrams$Freq, 
+                decreasing = TRUE
+            ),
+        ]
+    }
+    colnames(ngrams) <- c("String","Count")
+    ngrams
+}
+ 
+unigrams <- get_ngrams(sample.corpus.df, 1, 50)
+bigrams <- get_ngrams(sample.corpus.df, 2, 50)
+trigrams <- get_ngrams(sample.corpus.df, 3, 50)
+```
+
+After we've prepared *n-grams* we can plot it on wordcloud. I'd like to use wordcloud because it helps to understand how word dencity looks like. 
+
+#### Top 50 Unigrams 
+
+```{r out.width=800, warning=FALSE}
+set.seed(12345)
+pal <- brewer.pal(6, "Dark2")
+wordcloud(
+  words = unigrams$String, 
+  freq = unigrams$Count,
+  random.order=FALSE, 
+  use.r.layout=FALSE,
+  colors = pal
+)
+```
+
+#### Top 50 Bigrams 
+
+```{r out.width=800, warning=FALSE}
+set.seed(12345)
+pal <- brewer.pal(6, "Dark2")
+wordcloud(
+  words = bigrams$String, 
+  freq = bigrams$Count,
+  random.order=FALSE, 
+  use.r.layout=FALSE,
+  colors = pal
+)
+```
+
+#### Top 50 Trigrams 
+
+```{r out.width=800, warning=FALSE}
+set.seed(12345)
+pal <- brewer.pal(6, "Dark2")
+wordcloud(
+  words = trigrams$String, 
+  freq = trigrams$Count,
+  random.order=FALSE, 
+  use.r.layout=FALSE,
+  colors = pal
+)
+```
+
+Looks great! We can see top 50 of *n-grams* which used in corpus. So we can realize what *n-grams* most recently used in the texts. Sure, we discovered sample only. But in statistical matter the sample completely represents it's source. 
+
+### Conclusions
+
++ We can see that the most of all texts in data sets are not so long. Mostly it's length is from 0 to 250 characters. And it contains not many sentences. So we can reduce our work and use our clean up model for prediction purposes. 
++ The most used words are really looks like widely used. So we have chance to build really working prediction model if we will use *n-grams* as the base for our prediction.
++ The data we work with is a bit huge and it consume a lot of memory. First of all I will try to use corpus DB on cleanup stage. And in the other hand I will cache the results of calculation into RDS files. That will help me to deploy the results of works to publicity. 
++ I've found that using of multiprocessing is great if word with huge data. I've used *mc.cores* option with *tm_map()* and will try to find ways to use similar techincue on prediction stage. As soon as really increase the performance of the alghorithm.
+
+Also there are some conclustions that can help to make prediction model better. 
+
++ There are some abbreviations we should convert into full form on cleaning up stage. For example *I'm* should be converted into *I am* etc. We will have more consistant data due to this. 
++ I think we shouldn't remove stop-words according to purposes of this work, because we build prediction model which helps humans to type text. And the stopwords is the important part of the natural language. At least I will try to test prediction models with and without stopwords to test which will works better. 
+
+P.S. Then I started the *NGramTokenizer* on 10% sample I've got odd memory linked with *Out Of Java Memory*. The cutting vector into pieces helped me but I'm looking to *quanteda* package to use it in my later works. 
 
 
 
