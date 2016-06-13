@@ -19,7 +19,7 @@ Funsction *prepare_data()* will ensure that **Coursera-SwiftKey.zip** is downloa
 
 ## Examine files 
 
-I will check the line qty and it's statistical properties for every file. I will also tyr to find more interesting facts about the data. 
+I will check the line qty and it's statistical properties for every file. I will also try to find more interesting facts about the data. 
 
 Let's start from file sizes and the qty if line for every file. 
 
@@ -38,7 +38,7 @@ get_data = function(name){
     scan(file_path, what = "character", sep = "\n")
 }
 
-# Sample size is 10%
+# Sample size is 1%
 sample_size = 0.01
 
 twitter.lines <- get_data('twitter')
@@ -173,6 +173,9 @@ I will prepare the sample that cantains 10% of all provided data. For that let's
 
 ```{r}
 sample.lines  = c(twitter.lines.sample, blogs.lines.sample, news.lines.sample)
+rm(twitter.lines.sample)
+rm(blogs.lines.sample)
+rm(news.lines.sample)
 ```
 
 Now I have sample data set that contains `r length(sample.lines)` lines with representative data. We can easly process it but in the other hand we can make some suggestions on the basis of that data. 
@@ -198,7 +201,7 @@ convert_encoding = function(x){
 sample.corpus = tm_map(
     sample.corpus, 
     content_transformer(convert_encoding), 
-    mc.cores = 3
+    mc.cores = 4
 )
 
 # Convert to lower case
@@ -240,7 +243,7 @@ Ok, the data is clear and I can tokenize it using 1,2,3 and 4-grams. After that 
 
 ```{r cache=TRUE}
 # Tune CPU cores usage 
-options(mc.cores=2)
+options(mc.cores=4)
 
 sample.corpus.df = data.frame(
     text=unlist(sapply(sample.corpus,`[`, "content")), 
@@ -252,8 +255,6 @@ rm(sample.corpus)
 
 get_ngrams <- function(corpus, ngram_count = 1, limit = FALSE){
 
-    
-    
     ngrams <- NGramTokenizer(
         corpus, 
         Weka_control(
@@ -263,11 +264,6 @@ get_ngrams <- function(corpus, ngram_count = 1, limit = FALSE){
         )
     )
     ngrams <- data.frame(table(ngrams))
-    
-    
-    
-    
-    
     if (limit){
         ngrams <- ngrams[
             order(
