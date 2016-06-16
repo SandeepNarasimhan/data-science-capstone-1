@@ -20,6 +20,7 @@ vignettes/*.pdf
 .Rproj.user
 
 data/
+samples/
 downloads/
 
 *_cache/*

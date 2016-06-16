@@ -18,7 +18,10 @@ list_of_packages = c(
     'stringr',
     'DT',
     'stringi',
-    'ngram'
+    'ngram',
+    'foreach',
+    'doParallel',
+    'quanteda'
 )
 
 installed_packages = installed.packages()
@@ -28,3 +31,7 @@ for (package in list_of_packages){
     }
     library(package, character.only=TRUE)
 }
+
+cpu_core_qty = parallel::detectCores()
+registerDoParallel(makeCluster(cpu_core_qty))
+set.seed(112123)
