@@ -15,3 +15,20 @@ get_combined_sample = function(){
 }
 
 sample.lines = get_combined_sample()
+
+sample.corpus <- corpus(sample.lines)
+words_to_remove = c(stopwords("english"), get_profanity_words())
+sample_1_grams <- dfm(sample.corpus, ngrams = 1, what = "word", 
+                  removeNumbers = TRUE, removePunct = TRUE, removeSeparators = TRUE,
+                  removeTwitter = TRUE, removeHyphens = TRUE, 
+                  ignoredFeatures = words_to_remove, stem=TRUE)
+
+sample_2_grams <- dfm(sample.corpus, ngrams = 2, what = "word", 
+                      removeNumbers = TRUE, removePunct = TRUE, removeSeparators = TRUE,
+                      removeTwitter = TRUE, removeHyphens = TRUE, 
+                      ignoredFeatures = words_to_remove, stem=TRUE)
+
+sample_3_grams <- dfm(sample.corpus, ngrams = 3, what = "word", 
+                      removeNumbers = TRUE, removePunct = TRUE, removeSeparators = TRUE,
+                      removeTwitter = TRUE, removeHyphens = TRUE, 
+                      ignoredFeatures = words_to_remove, stem=TRUE)

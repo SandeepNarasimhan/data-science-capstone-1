@@ -101,7 +101,12 @@ get_sample = function(name){
     sample.lines
 }
 
+get_profanity_words = function() {
+    scan("dictionary/profanity.txt", what = "character", sep = "\n")
+}
 
-
-
-
+ng.sample_1_ngrams = ngram(paste(sample.lines, collapse = " "), 1)
+ng.sample_2_ngrams = ngram(paste(sample.lines, collapse = " "), n = 2)
+ng.sample_3_ngrams = ngram(paste(sample.lines, collapse = " "), n = 3)
+ng.sample_4_ngrams = ngram(paste(sample.lines, collapse = " "), n = 4)
+ng.sample_5_ngrams = ngram(paste(sample.lines, collapse = " "), n = 5)

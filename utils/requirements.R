@@ -19,9 +19,9 @@ list_of_packages = c(
     'DT',
     'stringi',
     'ngram',
+    'quanteda',
     'foreach',
-    'doParallel',
-    'quanteda'
+    'doParallel'
 )
 
 installed_packages = installed.packages()
