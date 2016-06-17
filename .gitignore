@@ -22,5 +22,6 @@ vignettes/*.pdf
 data/
 samples/
 downloads/
+clean
 
 *_cache/*

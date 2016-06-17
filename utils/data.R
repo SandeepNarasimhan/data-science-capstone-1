@@ -2,6 +2,7 @@ data_folder_name = 'data'
 samples_folder_name = 'samples'
 predictor_cache_folder_name = 'predictor'
 downloads_folder_name = 'downloads'
+clean_folder_name = 'clean'
 download_source = 'https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip'
 download_destination_path = paste(c(downloads_folder_name, 'Coursera-SwiftKey.zip'), collapse = "/")
 data_files = c('en_US.blogs.txt', 'en_US.news.txt', 'en_US.twitter.txt')
@@ -105,8 +106,4 @@ get_profanity_words = function() {
     scan("dictionary/profanity.txt", what = "character", sep = "\n")
 }
 
-ng.sample_1_ngrams = ngram(paste(sample.lines, collapse = " "), 1)
-ng.sample_2_ngrams = ngram(paste(sample.lines, collapse = " "), n = 2)
-ng.sample_3_ngrams = ngram(paste(sample.lines, collapse = " "), n = 3)
-ng.sample_4_ngrams = ngram(paste(sample.lines, collapse = " "), n = 4)
-ng.sample_5_ngrams = ngram(paste(sample.lines, collapse = " "), n = 5)
+

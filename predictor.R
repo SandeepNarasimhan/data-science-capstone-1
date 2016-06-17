@@ -1,5 +1,7 @@
 source('utils/requirements.R')
 source('utils/data.R')
+prepare_data()
+source('utils/cleaner.R')
 
 prepare_sample_files()
 
@@ -14,21 +16,29 @@ get_combined_sample = function(){
     sample.lines
 }
 
+get_combined_data = function(){
+    blogs.lines = get_data('blogs')
+    twitter.lines = get_data('twitter')
+    news.lines = get_data('news')
+    data.lines = c(blogs.lines, twitter.lines, news.lines)
+    rm(blogs.lines)
+    rm(twitter.lines)
+    rm(news.lines)
+    data.lines
+}
+
 sample.lines = get_combined_sample()
+sample.lines = head(sample.lines, 20)
 
-sample.corpus <- corpus(sample.lines)
-words_to_remove = c(stopwords("english"), get_profanity_words())
-sample_1_grams <- dfm(sample.corpus, ngrams = 1, what = "word", 
-                  removeNumbers = TRUE, removePunct = TRUE, removeSeparators = TRUE,
-                  removeTwitter = TRUE, removeHyphens = TRUE, 
-                  ignoredFeatures = words_to_remove, stem=TRUE)
 
-sample_2_grams <- dfm(sample.corpus, ngrams = 2, what = "word", 
-                      removeNumbers = TRUE, removePunct = TRUE, removeSeparators = TRUE,
-                      removeTwitter = TRUE, removeHyphens = TRUE, 
-                      ignoredFeatures = words_to_remove, stem=TRUE)
 
-sample_3_grams <- dfm(sample.corpus, ngrams = 3, what = "word", 
-                      removeNumbers = TRUE, removePunct = TRUE, removeSeparators = TRUE,
-                      removeTwitter = TRUE, removeHyphens = TRUE, 
-                      ignoredFeatures = words_to_remove, stem=TRUE)
+# ng.sample_1_ngrams = ngram(paste(sample.lines, collapse = " "), 1)
+# ng.sample_2_ngrams = ngram(paste(sample.lines, collapse = " "), n = 2)
+# ng.sample_3_ngrams = ngram(paste(sample.lines, collapse = " "), n = 3)
+# ng.sample_4_ngrams = ngram(paste(sample.lines, collapse = " "), n = 4)
+# ng.sample_5_ngrams = ngram(paste(sample.lines, collapse = " "), n = 5)
+
+clean.lines = clean_data(sample.lines)
+
+print(as.character(clean.lines))
+
