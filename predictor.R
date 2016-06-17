@@ -28,7 +28,6 @@ get_combined_data = function(){
 }
 
 sample.lines = get_combined_sample()
-sample.lines = head(sample.lines, 20)
 
 
 

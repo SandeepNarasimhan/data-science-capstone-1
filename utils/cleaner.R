@@ -18,11 +18,9 @@ get_clean_file_path = function(scope){
 save_clean_data_to_cache = function(data, scope = "sample"){
     
     file_path = get_clean_file_path(scope)
-    
     if (file.exists(file_path)){
         file.remove(file_path)
     }
-    
     connection = file(file_path)
     writeLines(data, connection)
     close(connection) 
@@ -44,11 +42,11 @@ clean_data = function(lines, scope = 'sample'){
         profanity_words = scan("dictionary/profanity.txt", what = "character", sep = "\n")
         
         lines.corpus = Corpus(VectorSource(lines))
-        lines.corpus = tm_map(lines.corpus, content_transformer(tolower))
-        lines.corpus = tm_map(lines.corpus, removePunctuation)
-        lines.corpus = tm_map(lines.corpus, removeNumbers)
-        lines.corpus = tm_map(lines.corpus, removeWords, stopwords("english"))
-        lines.corpus = tm_map(lines.corpus, removeWords, profanity_words)
+        lines.corpus = tm_map(lines.corpus, content_transformer(tolower), mc.cores = 4)
+        lines.corpus = tm_map(lines.corpus, removePunctuation, mc.cores = 4)
+        lines.corpus = tm_map(lines.corpus, removeNumbers, mc.cores = 4)
+        lines.corpus = tm_map(lines.corpus, removeWords, stopwords("english"), mc.cores = 4)
+        lines.corpus = tm_map(lines.corpus, removeWords, profanity_words, mc.cores = 4)
         
         lines = gsub(
             "\\s\\s+",
@@ -57,9 +55,7 @@ clean_data = function(lines, scope = 'sample'){
                 sapply(lines.corpus, `[`, "content")
             )
         )
-        
         save_clean_data_to_cache(lines, scope)
     }
-    
     lines
 }
