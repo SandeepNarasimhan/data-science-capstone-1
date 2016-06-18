@@ -7,7 +7,6 @@ cut_into_sentences = function(lines){
     lines
 }
 
-
 get_clean_file_path = function(scope){
     ensure_dir_exists(clean_folder_name)
     file_name = paste(c(scope, "txt"), collapse = ".")
@@ -26,10 +25,10 @@ save_clean_data_to_cache = function(data, scope = "sample"){
     close(connection) 
 }
 
+
 clean_data = function(lines, scope = 'sample'){
     
     file_path = get_clean_file_path(scope)
-    print(file_path)
     if (file.exists(file_path)){
         
         connection = file(file_path)
@@ -37,25 +36,65 @@ clean_data = function(lines, scope = 'sample'){
         close(connection)
         
     } else {
-        lines = cut_into_sentences(lines)
         
-        profanity_words = scan("dictionary/profanity.txt", what = "character", sep = "\n")
+        words_to_remove = get_profanity_words()
+        cluster = makeCluster(cpu_core_qty)
+        registerDoParallel()
         
-        lines.corpus = Corpus(VectorSource(lines))
-        lines.corpus = tm_map(lines.corpus, content_transformer(tolower), mc.cores = 4)
-        lines.corpus = tm_map(lines.corpus, removePunctuation, mc.cores = 4)
-        lines.corpus = tm_map(lines.corpus, removeNumbers, mc.cores = 4)
-        lines.corpus = tm_map(lines.corpus, removeWords, stopwords("english"), mc.cores = 4)
-        lines.corpus = tm_map(lines.corpus, removeWords, profanity_words, mc.cores = 4)
+        print("Sent Detect")
+        ptime <- system.time({
+            lines <- foreach(line = lines, .combine = c, .export = 'sent_detect') %dopar% {
+                sent_detect(line, language = "en", model = NULL)
+            }
+        });
+        print(ptime)
         
-        lines = gsub(
-            "\\s\\s+",
-            " ",
-            unlist(
-                sapply(lines.corpus, `[`, "content")
-            )
-        )
+        print("To Lower")
+        ptime <- system.time({
+            lines <- foreach(line = lines, .combine = c, .export = 'toLower') %dopar% {
+                toLower(line)
+            }
+        });
+        print(ptime)        
+        
+        print("Tokenize")
+        ptime <- system.time({
+            tokens <- foreach(
+                line = lines, 
+                .combine = c, 
+                .export = c(
+                    'tokenize',
+                    'words_to_remove',
+                    'removeFeatures'
+                )) %dopar% {
+                    removeFeatures(
+                        tokenize(
+                            line, 
+                            ngrams = 1, 
+                            what = "word", 
+                            removeNumbers = TRUE, 
+                            removePunct = TRUE, 
+                            removeSeparators = TRUE,
+                            removeTwitter = TRUE, 
+                            removeHyphens = TRUE, 
+                            removeURL = TRUE 
+                        ),
+                        words_to_remove
+                    )
+                }
+        });
+        print(ptime)    
+        
+        stopCluster(cluster)
+        
+        print("Unlist Tokens")
+        ptime <- system.time({
+            lines = unlist(lapply(tokens, function(x) paste(x, collapse = " ")))
+        });
+        print(ptime)    
+        
         save_clean_data_to_cache(lines, scope)
     }
     lines
 }
+

@@ -2,6 +2,7 @@ data_folder_name = 'data'
 samples_folder_name = 'samples'
 predictor_cache_folder_name = 'predictor'
 downloads_folder_name = 'downloads'
+ngrams_folder_name = 'ngrams'
 clean_folder_name = 'clean'
 download_source = 'https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip'
 download_destination_path = paste(c(downloads_folder_name, 'Coursera-SwiftKey.zip'), collapse = "/")
@@ -106,4 +107,24 @@ get_profanity_words = function() {
     scan("dictionary/profanity.txt", what = "character", sep = "\n")
 }
 
+get_combined_sample = function(){
+    blogs.sample.lines = get_sample('blogs')
+    twitter.sample.lines = get_sample('twitter')
+    news.sample.lines = get_sample('news')
+    sample.lines = c(blogs.sample.lines, twitter.sample.lines, news.sample.lines)
+    rm(blogs.sample.lines)
+    rm(twitter.sample.lines)
+    rm(news.sample.lines)
+    sample.lines
+}
 
+get_combined_data = function(){
+    blogs.lines = get_data('blogs')
+    twitter.lines = get_data('twitter')
+    news.lines = get_data('news')
+    data.lines = c(blogs.lines, twitter.lines, news.lines)
+    rm(blogs.lines)
+    rm(twitter.lines)
+    rm(news.lines)
+    data.lines
+}

@@ -33,6 +33,5 @@ for (package in list_of_packages){
     library(package, character.only=TRUE)
 }
 
-cpu_core_qty = parallel::detectCores()
-registerDoParallel(makeCluster(cpu_core_qty))
+cpu_core_qty = parallel::detectCores() * 2
 set.seed(112123)

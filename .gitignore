@@ -22,6 +22,7 @@ vignettes/*.pdf
 data/
 samples/
 downloads/
-clean
+clean/
+ngrams/
 
 *_cache/*
