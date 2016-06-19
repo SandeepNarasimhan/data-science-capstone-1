@@ -33,5 +33,5 @@ for (package in list_of_packages){
     library(package, character.only=TRUE)
 }
 
-cpu_core_qty = parallel::detectCores() * 2
+cpu_core_qty = parallel::detectCores()
 set.seed(112123)

@@ -55,7 +55,7 @@ clean_data = function(lines, scope = 'sample'){
         
     } else {
         
-        
+        words_to_remove = get_profanity_words()
         cluster = makeCluster(cpu_core_qty)
         registerDoParallel()
         
@@ -67,13 +67,41 @@ clean_data = function(lines, scope = 'sample'){
         });
         print(ptime)
         
-        print("Clean Phrases")
+        print("To Lower")
         ptime <- system.time({
-            tokens <- foreach(line = lines, .combine = c, .export = 'clean_phrase') %dopar% {
-                clean_phrase(line)
+            lines <- foreach(line = lines, .combine = c, .export = 'toLower') %dopar% {
+                toLower(line)
             }
         });
         print(ptime)        
+        
+        print("Tokenize")
+        ptime <- system.time({
+            tokens <- foreach(
+                line = lines, 
+                .combine = c, 
+                .export = c(
+                    'tokenize',
+                    'words_to_remove',
+                    'removeFeatures'
+                )) %dopar% {
+                    removeFeatures(
+                        tokenize(
+                            line, 
+                            ngrams = 1, 
+                            what = "word", 
+                            removeNumbers = TRUE, 
+                            removePunct = TRUE, 
+                            removeSeparators = TRUE,
+                            removeTwitter = TRUE, 
+                            removeHyphens = TRUE, 
+                            removeURL = TRUE 
+                        ),
+                        words_to_remove
+                    )
+                }
+        });
+        print(ptime)     
         
         
         stopCluster(cluster)
