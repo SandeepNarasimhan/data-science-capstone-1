@@ -2,6 +2,8 @@ source('utils/requirements.R')
 source('utils/data.R')
 prepare_data()
 
+words_to_remove = c(get_profanity_words(), stopwords('english'))
+
 cut_into_sentences = function(lines){
     lines = sent_detect(lines, language = "en", model = NULL)
     lines
@@ -25,6 +27,22 @@ save_clean_data_to_cache = function(data, scope = "sample"){
     close(connection) 
 }
 
+clean_phrase = function(line){
+    removeFeatures(
+        tokenize(
+            toLower(line), 
+            ngrams = 1, 
+            what = "word", 
+            removeNumbers = TRUE, 
+            removePunct = TRUE, 
+            removeSeparators = TRUE,
+            removeTwitter = TRUE, 
+            removeHyphens = TRUE, 
+            removeURL = TRUE 
+        ),
+        words_to_remove
+    )
+}
 
 clean_data = function(lines, scope = 'sample'){
     
@@ -37,7 +55,7 @@ clean_data = function(lines, scope = 'sample'){
         
     } else {
         
-        words_to_remove = get_profanity_words()
+        
         cluster = makeCluster(cpu_core_qty)
         registerDoParallel()
         
@@ -49,41 +67,14 @@ clean_data = function(lines, scope = 'sample'){
         });
         print(ptime)
         
-        print("To Lower")
+        print("Clean Phrases")
         ptime <- system.time({
-            lines <- foreach(line = lines, .combine = c, .export = 'toLower') %dopar% {
-                toLower(line)
+            tokens <- foreach(line = lines, .combine = c, .export = 'clean_phrase') %dopar% {
+                clean_phrase(line)
             }
         });
         print(ptime)        
         
-        print("Tokenize")
-        ptime <- system.time({
-            tokens <- foreach(
-                line = lines, 
-                .combine = c, 
-                .export = c(
-                    'tokenize',
-                    'words_to_remove',
-                    'removeFeatures'
-                )) %dopar% {
-                    removeFeatures(
-                        tokenize(
-                            line, 
-                            ngrams = 1, 
-                            what = "word", 
-                            removeNumbers = TRUE, 
-                            removePunct = TRUE, 
-                            removeSeparators = TRUE,
-                            removeTwitter = TRUE, 
-                            removeHyphens = TRUE, 
-                            removeURL = TRUE 
-                        ),
-                        words_to_remove
-                    )
-                }
-        });
-        print(ptime)    
         
         stopCluster(cluster)
         

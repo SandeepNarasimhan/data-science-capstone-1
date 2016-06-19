@@ -2,7 +2,7 @@ source('utils/requirements.R')
 source('utils/data.R')
 prepare_data()
 
-ngrams_n = 1:10
+ngrams_n = 2:11
 
 get_ngrams_file = function(ngrams_n){
     paste(c(ngrams_n, "RDS"), collapse = ".")
@@ -47,6 +47,10 @@ prepare_ngrams = function(list, ngrams_n){
     print(ptime)
     
     lines.word.count = unlist(lapply(clean.lines, wordcount))  
+    
+    cluster = makeCluster(cpu_core_qty)
+    registerDoParallel()
+    
     print("Tokenize n-grams")
     ptime <- system.time({
         foreach(
@@ -70,4 +74,6 @@ prepare_ngrams = function(list, ngrams_n){
         }
     })
     print(ptime)     
+    
+    stopCluster(cluster)
 }
