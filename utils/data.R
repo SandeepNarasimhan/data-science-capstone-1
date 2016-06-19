@@ -30,13 +30,13 @@ is_file_exists = function(file_name){
 
 extract_data_file = function(data_file){
     print(paste(c('No data file', data_file, 'extracting...'), collapse = " "))
-    list_of_files = unzip(destination_path, list = TRUE)
+    list_of_files = unzip(download_destination_path, list = TRUE)
     for (file in list_of_files$Name){
         if (grepl(data_file, file)){
             file_to_extract = file
             
             unzip(
-                destination_path, 
+                download_destination_path, 
                 files = file_to_extract,
                 exdir = data_folder_name,
                 junkpaths = TRUE

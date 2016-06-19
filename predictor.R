@@ -3,11 +3,11 @@ source('utils/data.R')
 prepare_data()
 source('utils/cleaner.R')
 source('utils/ngrams.R')
-prepare_sample_files()
+# prepare_sample_files()
 
 if (!is_ngrams_ready(ngrams_n)){
-    sample.lines = get_combined_sample()
-    clean.lines = clean_data(sample.lines)
+    lines = get_combined_data()
+    clean.lines = clean_data(lines)
     prepare_ngrams(clean.lines, ngrams_n = ngrams_n)    
 }
 
@@ -45,18 +45,25 @@ predict = function(phrase){
 # Test Predictor 
 ###
 
-# print(predict("Be grateful for the good times and keep the faith during the"))
-# worse
-# sad
-# bad
-# hard
+print(head(predict("The guy in front of me just bought a pound of bacon, a bouquet, and a case of")))
 
-print(predict("If this isn't the cutest thing you've ever seen, then you must be"))
-# asleep
-# callous
-# insensitive
-# insane
+print(head(predict("You're the reason why I smile everyday. Can you follow me please? It would mean the")))
 
+print(head(predict("Hey sunshine, can you follow me and make me the")))
+
+print(head(predict("Very early observations on the Bills game: Offense still struggling but the")))
+
+print(head(predict("Go on a romantic date at the")))
+
+print(head(predict("Well I'm pretty sure my granny has some old bagpipes in her garage I'll dust them off and be on my")))
+
+print(head(predict("Ohhhhh #PointBreak is on tomorrow. Love that film and haven't seen it in quite some")))
+
+print(head(predict("After the ice bucket challenge Louis will push his long wet hair out of his eyes with his little")))
+
+print(head(predict("Be grateful for the good times and keep the faith during the")))
+
+print(head(predict("If this isn't the cutest thing you've ever seen, then you must be")))
 
 
 

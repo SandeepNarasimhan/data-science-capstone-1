@@ -2,7 +2,7 @@ source('utils/requirements.R')
 source('utils/data.R')
 prepare_data()
 
-words_to_remove = c(get_profanity_words(), stopwords('english'))
+words_to_remove = c(get_profanity_words())
 
 cut_into_sentences = function(lines){
     lines = sent_detect(lines, language = "en", model = NULL)

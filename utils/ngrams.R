@@ -2,7 +2,7 @@ source('utils/requirements.R')
 source('utils/data.R')
 prepare_data()
 
-ngrams_n = 2:11
+ngrams_n = 2:21
 
 get_ngrams_file = function(ngrams_n){
     paste(c(ngrams_n, "RDS"), collapse = ".")
@@ -42,11 +42,9 @@ prepare_ngrams = function(list, ngrams_n){
     
     print("Define Words Count")
     ptime <- system.time({
-        lines.word.count = unlist(lapply(clean.lines, wordcount))    
+        lines.word.count = unlist(lapply(list, wordcount))    
     })
     print(ptime)
-    
-    lines.word.count = unlist(lapply(clean.lines, wordcount))  
     
     cluster = makeCluster(cpu_core_qty)
     registerDoParallel()
