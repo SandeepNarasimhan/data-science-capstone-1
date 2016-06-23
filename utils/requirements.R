@@ -1,6 +1,7 @@
 list_of_packages = c(
     'dplyr',
     'pander',
+    'text2vec',
     'ggplot2',
     'RWekajars',
     'qdapDictionaries',
@@ -33,5 +34,7 @@ for (package in list_of_packages){
     library(package, character.only=TRUE)
 }
 
-cpu_core_qty = parallel::detectCores()
+max_cpu_qty = 4
+detected_cpu_qty = parallel::detectCores()
+cpu_core_qty = min(c(detected_cpu_qty, max_cpu_qty))
 set.seed(112123)

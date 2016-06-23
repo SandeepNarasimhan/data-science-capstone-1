@@ -91,7 +91,10 @@ prepare_sample_files = function(){
 get_data = function(type){
     file_name = paste(c('en_US', type, 'txt'), collapse = ".")
     file_path = paste(c(data_folder_name, file_name), collapse = "/")
-    scan(file_path, what = "character", sep = "\n")
+    connection = file(file_path)
+    data.lines = readLines(connection, encoding = 'UTF-8', skipNul = TRUE)
+    close(connection)
+    data.lines
 }
 
 get_sample = function(name){
@@ -104,7 +107,10 @@ get_sample = function(name){
 }
 
 get_profanity_words = function() {
-    scan("dictionary/profanity.txt", what = "character", sep = "\n")
+    connection = file("dictionary/profanity.txt")
+    lines = readLines(connection, encoding = 'UTF-8', skipNul = TRUE)
+    close(connection)
+    lines
 }
 
 get_combined_sample = function(){

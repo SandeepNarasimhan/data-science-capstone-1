@@ -6,9 +6,9 @@ source('utils/ngrams.R')
 # prepare_sample_files()
 
 if (!is_ngrams_ready(ngrams_n)){
-    lines = get_combined_data()
+    # lines = get_combined_data()
     
-    # lines = sample(get_combined_sample(), 100)
+    lines = get_combined_sample()
         
     clean.lines = clean_data(lines)
     prepare_ngrams(clean.lines, ngrams_n = ngrams_n)    
