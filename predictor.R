@@ -50,25 +50,25 @@ predict = function(phrase){
 # Test Predictor 
 ###
 
-head(predict("The guy in front of me just bought a pound of bacon, a bouquet, and a case of"))
+head(predict("The guy in front of me just bought a pound of bacon, a bouquet, and a case of"), 10)
 
-head(predict("You're the reason why I smile everyday. Can you follow me please? It would mean the"))
+head(predict("You're the reason why I smile everyday. Can you follow me please? It would mean the"), 10)
 
-head(predict("Hey sunshine, can you follow me and make me the"))
+head(predict("Hey sunshine, can you follow me and make me the"), 10)
 
-head(predict("Very early observations on the Bills game: Offense still struggling but the"))
+head(predict("Very early observations on the Bills game: Offense still struggling but the"), 10)
 
-head(predict("Go on a romantic date at the"))
+head(predict("Go on a romantic date at the"), 10)
 
-head(predict("Well I'm pretty sure my granny has some old bagpipes in her garage I'll dust them off and be on my"))
+head(predict("Well I'm pretty sure my granny has some old bagpipes in her garage I'll dust them off and be on my"), 10)
 
-head(predict("Ohhhhh #PointBreak is on tomorrow. Love that film and haven't seen it in quite some"))
+head(predict("Ohhhhh #PointBreak is on tomorrow. Love that film and haven't seen it in quite some"), 10)
 
-head(predict("After the ice bucket challenge Louis will push his long wet hair out of his eyes with his little"))
+head(predict("After the ice bucket challenge Louis will push his long wet hair out of his eyes with his little"), 10)
 
-head(predict("Be grateful for the good times and keep the faith during the"))
+head(predict("Be grateful for the good times and keep the faith during the"), 10)
 
-head(predict("If this isn't the cutest thing you've ever seen, then you must be"))
+head(predict("If this isn't the cutest thing you've ever seen, then you must be"), 10)
 
 
 

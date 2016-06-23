@@ -72,7 +72,6 @@ prepare_ngrams = function(lines, ngrams_n){
         timer = system.time({
             tokens = get_tokens(lines)
             vocab = create_vocabulary(tokens, c(n, n), stopwords = words_to_remove)
-            vocab = prune_vocabulary(vocab, term_count_min = 2)
             save_ngrams(vocab$vocab, n)  
             rm(vocab)
             rm(tokens)
