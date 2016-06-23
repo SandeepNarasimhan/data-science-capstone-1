@@ -2,7 +2,8 @@ source('utils/requirements.R')
 source('utils/data.R')
 prepare_data()
 
-ngrams_n = 2:21
+ngrams_n = 2:5
+words_to_remove = c(get_profanity_words(), stopwords('english'))
 
 get_ngrams_file = function(ngrams_n){
     paste(c(ngrams_n, "RDS"), collapse = ".")
@@ -38,40 +39,44 @@ is_ngrams_ready = function(ngrams_n){
     ready
 }
 
-prepare_ngrams = function(list, ngrams_n){
-    
-    print("Define Words Count")
-    ptime <- system.time({
-        lines.word.count = unlist(lapply(list, wordcount))    
+split_to_sentences = function(lines){
+    print("Split to sentences")
+    timer = system.time({
+        sentences = unlist(lines %>% regexp_tokenizer(pattern = '[\\.\\?\\!]+'))    
     })
-    print(ptime)
-    
-    cluster = makeCluster(cpu_core_qty)
-    registerDoParallel()
+    print(timer)
+    sentences
+}
+
+get_tokens = function(lines, scope = 'sample'){
+    print("Preparing Tokens")
+    timer = system.time({
+        tokens = itoken(
+            split_to_sentences(lines), 
+            preprocess_function = tolower, 
+            tokenizer = word_tokenizer, 
+            chunks_number = 10, 
+            progessbar = TRUE
+        )
+    })
+    print(timer)
+    tokens
+}
+
+prepare_ngrams = function(lines, ngrams_n){
     
     print("Tokenize n-grams")
-    ptime <- system.time({
-        foreach(
-            n = ngrams_n, 
-            .export = c(
-                'list', 
-                'lines.word.count', 
-                'ngram',
-                'get.phrasetable',
-                'save_ngrams'
-            )
-        ) %dopar% {
-            matched.list = list[lines.word.count >= n]
-            if (length(matched.list) > 0){
-                ngram_tdm = ngram(matched.list, n = n)
-                save_ngrams(get.phrasetable(ngram_tdm), n)
-                print(paste(c("Done", n, "grams"), collapse = " "))
-            } else {
-                print(paste(c("Skip", n, "grams due to empty list"), collapse = " "))
-            }
-        }
-    })
-    print(ptime)     
     
-    stopCluster(cluster)
+    for (n in ngrams_n){
+        print(paste(c("Prepare", n, "grams"), collapse = " "))
+        timer = system.time({
+            tokens = get_tokens(lines)
+            vocab = create_vocabulary(tokens, c(n, n), stopwords = words_to_remove)
+            vocab = prune_vocabulary(vocab, term_count_min = 2)
+            save_ngrams(vocab$vocab, n)  
+            rm(vocab)
+            rm(tokens)
+        }) 
+        print(paste(c("Done", n, "grams"), collapse = " "))
+    }
 }
