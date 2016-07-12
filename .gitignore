@@ -24,5 +24,7 @@ samples/
 downloads/
 clean/
 ngrams/
+huge_ngrams/
+short_ngrams/
 
 *_cache/*
