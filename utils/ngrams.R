@@ -2,7 +2,7 @@ source('utils/requirements.R')
 source('utils/data.R')
 prepare_data()
 
-ngrams_n = 2:5
+ngrams_n = 2:3
 words_to_remove = c(get_profanity_words(), stopwords('english'))
 
 get_ngrams_file = function(ngrams_n){
