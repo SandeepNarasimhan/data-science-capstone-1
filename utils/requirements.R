@@ -1,4 +1,5 @@
 list_of_packages = c(
+    'plyr',
     'dplyr',
     'pander',
     'text2vec',
@@ -23,7 +24,8 @@ list_of_packages = c(
     'ngram',
     'quanteda',
     'foreach',
-    'doParallel'
+    'doParallel',
+    'e1071'
 )
 
 installed_packages = installed.packages()

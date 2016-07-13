@@ -26,5 +26,6 @@ clean/
 ngrams/
 huge_ngrams/
 short_ngrams/
+trained_model/
 
 *_cache/*
