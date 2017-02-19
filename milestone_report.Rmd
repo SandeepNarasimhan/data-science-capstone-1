@@ -1,7 +1,7 @@
 ---
 title: 'Milestone Report: Exploratory Data Analisys'
 author: "Igor Goltsov <riversy@gmail.com>"
-date: "June 11, 2016"
+date: "February 19, 2017"
 output: html_document
 ---
 
@@ -15,7 +15,7 @@ source('utils/data.R')
 prepare_data()
 ```
 
-Funsction *prepare_data()* will ensure that **Coursera-SwiftKey.zip** is downloaded and proper that necessery files are unzipped into *data* folder. 
+Function *prepare_data()* will ensure that **Coursera-SwiftKey.zip** is downloaded and that necessery files are unzipped into *data* folder. 
 
 ## Examine files 
 
@@ -38,8 +38,8 @@ get_data = function(name){
     scan(file_path, what = "character", sep = "\n")
 }
 
-# Sample size is 1%
-sample_size = 0.01
+# Sample size is 25%
+sample_size = 0.25
 
 twitter.lines <- get_data('twitter')
 twitter.lines.lengths = nchar(twitter.lines)
@@ -161,7 +161,7 @@ ggplot(combined.df, aes(x=factor(source), y=length)) +
     ylim(0, 1000)
 ```
 
-Wat can we resume? That the **Tweets**, **Blog Posts** and **News Lines** has mostly same size. But **Blog Posts** and **News** has much more higther maximum length of lines.
+What can we resume? That the **Tweets**, **Blog Posts** and **News Lines** has mostly same size. But **Blog Posts** and **News** has much more higther maximum length of lines.
 
 ## Keyword Dencity Analysis
 
@@ -184,108 +184,82 @@ Now I have sample data set that contains `r length(sample.lines)` lines with rep
 
 On this step I will create new *Corpus* of the **tm** package and remove from text stop words, numbers and punctuation. I also would like to remove profanity words from all texts to prevent my work from being confusing. I will use following list as profanity dictionary - [https://gist.github.com/ryanlewis/a37739d710ccdb4b406d](https://gist.github.com/ryanlewis/a37739d710ccdb4b406d).
 
+I've examined some control characters in the corpus. As first step of cleanup process I need to remove them from corpus.
+
 ```{r cache=TRUE}
-# Create Corpus of Sample
-sample.corpus = Corpus(VectorSource(sample.lines))
+sample.lines <- iconv(sample.lines, to="UTF-8", sub="byte")
+```
 
-# Remove variable with Sample Vector to reduce
-# memory consumption.
+We need to find per senrtence n-grams. Our main goal is to predict next word of text on per sentence basis. So, the next step is te split lines into sentences. 
+
+```{r cache=TRUE}
+split_to_sentences = function(lines){
+    unlist(lines %>% regexp_tokenizer(pattern = '[\\.\\?\\!]+'))    
+}
+
+sample.sentences <- split_to_sentences(sample.lines)
 rm(sample.lines)
-
-# I've examined control characters in the body of some texts.
-# And I'd like to make it clean from these characters.
-convert_encoding = function(x){
-    iconv(x, to="UTF-8", sub="byte")
-}
-
-sample.corpus = tm_map(
-    sample.corpus, 
-    content_transformer(convert_encoding), 
-    mc.cores = 4
-)
-
-# Convert to lower case
-sample.corpus = tm_map(
-    sample.corpus, 
-    content_transformer(tolower), 
-    lazy = TRUE
-)
-
-# Remove punctuation
-sample.corpus = tm_map(sample.corpus, content_transformer(removePunctuation))
-
-# Remove numbers
-sample.corpus = tm_map(sample.corpus, content_transformer(removeNumbers))
-
-# Remove URLs
-remove_url_callback = function(x){
-    gsub("http[[:alnum:]]*", "", x) 
-}
-sample.corpus = tm_map(sample.corpus, content_transformer(remove_url_callback))
-
-# Remove stop words
-sample.corpus = tm_map(sample.corpus, content_transformer(removeWords), stopwords("english"))
-
-# Remove profanity words
-profanity_words = scan("dictionary/profanity.txt", what = "character", sep = "\n")
-sample.corpus = tm_map(sample.corpus, content_transformer(removeWords), profanity_words)
-
-# Stem document
-sample.corpus = tm_map(sample.corpus, content_transformer(stemDocument))
-
-# Strip white spaces 
-sample.corpus = tm_map(sample.corpus, content_transformer(stripWhitespace))
 ```
 
 ### Tockenize Cleaned Sample Corpus
 
 Ok, the data is clear and I can tokenize it using 1,2,3 and 4-grams. After that I will define more recent used words and build wordcloud for these sets of words. 
 
-```{r cache=TRUE}
-# Tune CPU cores usage 
-options(mc.cores=4)
+I will tokenize corpus and find n-grams using **text2vec** package. I found is a fastest way to get job done. 
 
-sample.corpus.df = data.frame(
-    text=unlist(sapply(sample.corpus,`[`, "content")), 
-    stringsAsFactors = FALSE
+```{r cache=TRUE}
+
+# Load stopwords from external dictionary
+words_to_remove = c(
+    get_profanity_words(), 
+    tokenizers::stopwords('en')
 )
 
-# Free memory
-rm(sample.corpus)
-
-get_ngrams <- function(corpus, ngram_count = 1, limit = FALSE){
-
-    ngrams <- NGramTokenizer(
-        corpus, 
-        Weka_control(
-            min = ngram_count, 
-            max = ngram_count, 
-            delimiters = " \\r\\n\\t.,;:\"()?!"
-        )
+# Prepare tokenizer function
+get_tokens = function(sentences){
+    tokens = itoken(
+        sentences, 
+        preprocess_function = tolower, 
+        tokenizer = tokenizers::tokenize_words, 
+        chunks_number = 10, 
+        progessbar = TRUE
     )
-    ngrams <- data.frame(table(ngrams))
+    tokens
+}
+
+# Extract n-grams from tokens vocabluary
+prepare_ngrams = function(lines, ngrams_num){
+    tokens <- get_tokens(lines)
+    min_n_gram <- ngrams_num
+    max_n_gram <- ngrams_num
+    vocab = create_vocabulary(
+        tokens, 
+        c(min_n_gram, max_n_gram), 
+        stopwords <- words_to_remove
+    )
+    vocab <- prune_vocabulary(vocab, term_count_min = 2)
+    vocab$vocab
+}
+
+get_ngrams <- function(lines, ngram_count, limit = FALSE, remove_underscore = FALSE){
+    vocabluary <- prepare_ngrams(lines, ngram_count)
+    ngrams <- select(vocabluary, terms, terms_counts) %>% arrange(desc(terms_counts))
+    
     if (limit){
-        ngrams <- ngrams[
-            order(
-                ngrams$Freq, 
-                decreasing = TRUE
-            ),
-        ][1:limit, ]
-    } else {
-        ngrams <- ngrams[
-            order(
-                ngrams$Freq, 
-                decreasing = TRUE
-            ),
-        ]
+        ngrams <- ngrams[1:limit, ]
     }
-    colnames(ngrams) <- c("String","Count")
+    
+    if (remove_underscore){
+        ngrams$terms <- gsub("\\_", " ", ngrams$terms)
+    }
+    
+    colnames(ngrams) <- c("Terms", "Count")
     ngrams
 }
- 
-unigrams <- get_ngrams(sample.corpus.df, 1, 50)
-bigrams <- get_ngrams(sample.corpus.df, 2, 50)
-trigrams <- get_ngrams(sample.corpus.df, 3, 50)
+
+unigrams <- get_ngrams(sample.sentences, 1, 50, remove_underscore = TRUE)
+bigrams <- get_ngrams(sample.sentences, 2, 50, remove_underscore = TRUE)
+trigrams <- get_ngrams(sample.sentences, 3, 50, remove_underscore = TRUE)
 ```
 
 After we've prepared *n-grams* we can plot it on wordcloud. I'd like to use wordcloud because it helps to understand how word dencity looks like. 
@@ -296,7 +270,7 @@ After we've prepared *n-grams* we can plot it on wordcloud. I'd like to use word
 set.seed(12345)
 pal <- brewer.pal(6, "Dark2")
 wordcloud(
-  words = unigrams$String, 
+  words = unigrams$Terms, 
   freq = unigrams$Count,
   random.order=FALSE, 
   use.r.layout=FALSE,
@@ -310,7 +284,7 @@ wordcloud(
 set.seed(12345)
 pal <- brewer.pal(6, "Dark2")
 wordcloud(
-  words = bigrams$String, 
+  words = bigrams$Terms, 
   freq = bigrams$Count,
   random.order=FALSE, 
   use.r.layout=FALSE,
@@ -324,7 +298,7 @@ wordcloud(
 set.seed(12345)
 pal <- brewer.pal(6, "Dark2")
 wordcloud(
-  words = trigrams$String, 
+  words = trigrams$Terms, 
   freq = trigrams$Count,
   random.order=FALSE, 
   use.r.layout=FALSE,

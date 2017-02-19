@@ -3,6 +3,7 @@ list_of_packages = c(
     'dplyr',
     'pander',
     'text2vec',
+    'tokenizers',
     'ggplot2',
     'RWekajars',
     'qdapDictionaries',
@@ -24,8 +25,7 @@ list_of_packages = c(
     'ngram',
     'quanteda',
     'foreach',
-    'doParallel',
-    'e1071'
+    'doParallel'
 )
 
 installed_packages = installed.packages()
